@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marbio News — Veille Vaccins & Santé</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans','Segoe UI',system-ui,sans-serif;background:linear-gradient(168deg,#F0F6FC 0%,#E8F0FE 35%,#F7F9FC 100%);min-height:100vh;color:#0A1929}
+.header{background:linear-gradient(135deg,#001F3D 0%,#003366 40%,#00538A 100%);padding:26px 20px 20px;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-50px;right:-30px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.03)}
+.header-inner{max-width:820px;margin:0 auto;position:relative}
+.logo-row{display:flex;align-items:center;gap:14px;margin-bottom:4px}
+.logo-icon{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,rgba(255,255,255,0.14),rgba(255,255,255,0.06));display:flex;align-items:center;justify-content:center;font-size:24px;border:1px solid rgba(255,255,255,0.12)}
+.logo-title{font-family:'Source Serif 4',Georgia,serif;font-size:28px;font-weight:700;color:#fff;letter-spacing:-0.5px}
+.logo-sub{font-size:11.5px;color:rgba(255,255,255,0.5);letter-spacing:1.8px;text-transform:uppercase;font-weight:500;margin-top:2px}
+.search-row{display:flex;gap:8px;margin-top:18px}
+.search-wrap{flex:1;position:relative}
+.search-input{width:100%;padding:12px 16px 12px 42px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.08);color:#fff;font-size:13.5px;outline:none;font-family:inherit;transition:all .2s}
+.search-input:focus{background:rgba(255,255,255,0.14);border-color:rgba(255,255,255,0.25)}
+.search-input::placeholder{color:#9AB0C6}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;opacity:.45}
+.search-btn{padding:12px 22px;border-radius:12px;border:none;background:#fff;color:#00538A;font-weight:650;font-size:13px;cursor:pointer;white-space:nowrap;font-family:inherit}
+.main{max-width:820px;margin:0 auto;padding:18px 16px 40px}
+.categories{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px}
+.cat-btn{padding:14px;border-radius:14px;border:1px solid rgba(0,40,80,0.07);background:#fff;color:#2A3B4E;cursor:pointer;text-align:left;transition:all .25s;box-shadow:0 1px 4px rgba(0,40,80,0.04);font-family:inherit}
+.cat-btn:hover{box-shadow:0 4px 12px rgba(0,105,180,0.1);transform:translateY(-1px)}
+.cat-btn.active{border:2px solid #0069B4;background:linear-gradient(135deg,#0069B4,#00538A);color:#fff;box-shadow:0 6px 20px rgba(0,105,180,0.2)}
+.cat-icon{font-size:20px;margin-bottom:5px}
+.cat-label{font-size:12.5px;font-weight:650;line-height:1.3;margin-bottom:3px}
+.cat-desc{font-size:10.5px;line-height:1.4;opacity:.5}
+.cat-btn.active .cat-desc{opacity:.8}
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.toolbar-info{font-size:12px;color:#7A8A9E}
+.toolbar-right{display:flex;align-items:center;gap:10px}
+.hint{font-size:11px;color:#9AB0C6;background:rgba(0,105,180,0.05);padding:4px 10px;border-radius:6px}
+.refresh-btn{padding:7px 16px;border-radius:9px;border:1px solid rgba(0,105,180,0.15);background:#fff;color:#0069B4;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;transition:all .2s}
+.refresh-btn:hover{background:rgba(0,105,180,0.04)}
+.refresh-btn:disabled{opacity:.5;cursor:not-allowed}
+.refresh-btn.loading .icon{animation:spin 1s linear infinite}
+.articles{display:flex;flex-direction:column;gap:12px}
+.article-card{background:#fff;border-radius:16px;border:1px solid rgba(0,40,80,0.07);padding:20px 22px;transition:all .25s cubic-bezier(.4,0,.2,1);animation:fadeSlideIn .4s ease both}
+.article-card:hover{border-color:rgba(0,105,180,0.2);transform:translateY(-1px);box-shadow:0 8px 30px rgba(0,105,180,0.08)}
+.article-inner{display:flex;gap:14px;align-items:flex-start}
+.article-bar{width:6px;min-height:50px;border-radius:3px;opacity:.7;flex-shrink:0;margin-top:2px}
+.article-body{flex:1;min-width:0}
+.article-title{font-family:'Source Serif 4',Georgia,serif;font-size:15.5px;font-weight:650;line-height:1.45;color:#0A1929;text-decoration:none;display:block;margin-bottom:10px}
+.article-title:hover{color:#0069B4}
+.article-content{font-size:13.5px;line-height:1.7;color:#3A4D62;margin-bottom:14px;overflow:hidden}
+.article-content.collapsed{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
+.article-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.source-tag{padding:3px 10px;border-radius:6px;font-weight:600;font-size:11px}
+.date-tag{font-size:11.5px;color:#8A9BB0}
+.expand-btn{background:none;border:1px solid rgba(0,105,180,0.15);border-radius:6px;padding:3px 10px;color:#0069B4;font-size:11px;font-weight:600;cursor:pointer;margin-left:auto;font-family:inherit;transition:all .2s}
+.expand-btn:hover{background:rgba(0,105,180,0.05)}
+.spinner-wrap{display:flex;flex-direction:column;align-items:center;padding:50px 0}
+.spinner{width:48px;height:48px;border:3px solid rgba(0,105,180,0.1);border-top-color:#0069B4;border-radius:50%;animation:spin .8s linear infinite;margin-bottom:16px}
+.spinner-text{color:#5A7A96;font-size:14px;font-weight:500}
+.spinner-sub{color:#9AB0C6;font-size:12px;margin-top:6px}
+.status-bar{padding:8px 14px;border-radius:10px;background:linear-gradient(135deg,rgba(0,105,180,0.06),rgba(0,105,180,0.02));border:1px solid rgba(0,105,180,0.1);color:#0069B4;font-size:12px;font-weight:500;margin-bottom:14px;display:none;align-items:center;gap:8px}
+.status-bar.visible{display:flex}
+.status-dot{width:6px;height:6px;border-radius:50%;background:#0069B4;animation:pulse 1.5s infinite}
+.error-box{padding:12px 16px;border-radius:12px;background:#FFF8F0;border:1px solid #FFE4C8;color:#8B5E2A;font-size:13px;margin-bottom:14px;display:none;align-items:center;gap:10px}
+.last-update{font-size:11px;color:#9AB0C6;background:rgba(0,180,80,0.06);border:1px solid rgba(0,180,80,0.12);padding:4px 10px;border-radius:6px;display:inline-flex;align-items:center;gap:5px;margin-left:8px}
+.last-update .dot{width:6px;height:6px;border-radius:50%;background:#2ECC71}
+.footer{margin-top:50px;padding-top:22px;border-top:1px solid rgba(0,40,80,0.06);text-align:center;font-size:11px;color:#9AB0C6;line-height:2}
+.footer strong{color:#4A6A84;font-weight:600;font-size:12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@media(max-width:640px){.categories{grid-template-columns:repeat(2,1fr)}.toolbar{flex-direction:column;align-items:flex-start}.toolbar-right{width:100%;justify-content:space-between}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <div class="logo-row">
+      <div class="logo-icon">🧬</div>
+      <div>
+        <div class="logo-title">Marbio News</div>
+        <div class="logo-sub">Veille Vaccins · Santé · Afrique · Maroc · Monde</div>
+      </div>
+    </div>
+    <div class="search-row">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="searchInput" placeholder="Recherche libre… (ex: paludisme, Aspen Pharmacare, OMS)">
+      </div>
+      <button class="search-btn" id="searchBtn">Rechercher</button>
+    </div>
+  </div>
+</header>
+<main class="main">
+  <div class="categories" id="categories"></div>
+  <div class="status-bar" id="statusBar"><span class="status-dot"></span><span id="statusText"></span></div>
+  <div class="toolbar">
+    <div>
+      <span class="toolbar-info" id="toolbarInfo"></span>
+      <span class="last-update" id="lastUpdate" style="display:none"><span class="dot"></span><span id="lastUpdateText"></span></span>
+    </div>
+    <div class="toolbar-right">
+      <div class="hint">💡 "Lire plus" pour le résumé complet</div>
+      <button class="refresh-btn" id="refreshBtn"><span class="icon">↻</span> Actualiser</button>
+    </div>
+  </div>
+  <div class="error-box" id="errorBox"></div>
+  <div class="articles" id="articles"></div>
+  <footer class="footer">
+    <strong>Marbio News</strong><br>
+    Veille sanitaire · Africa CDC · AMA · UNICEF · GAVI · Maroc · Monde<br>
+    Propulsé par Tavily · Cliquez Actualiser pour des données fraîches
+  </footer>
+</main>
+<script>
+const TAVILY_KEY="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";
+
+const CATEGORIES=[
+  {id:"african-cdc",label:"Africa CDC",icon:"🌍",desc:"Publications et communiqués",query:"Africa CDC publications health outbreak news 2026"},
+  {id:"african-medical-agency",label:"Agence Africaine du Médicament",icon:"💊",desc:"Actualités réglementaires (AMA)",query:"African Medicines Agency AMA regulation news 2026"},
+  {id:"manufacture-vaccins",label:"Manufacture Vaccins Afrique",icon:"🏭",desc:"Production vaccins et biologiques",query:"vaccine manufacturing Africa biological products production 2026"},
+  {id:"unicef-gavi",label:"UNICEF & GAVI",icon:"💉",desc:"Campagnes d'immunisation",query:"UNICEF GAVI vaccines immunization campaign news 2026"},
+  {id:"sante-maroc",label:"Santé Maroc",icon:"🇲🇦",desc:"Système de soins marocain",query:"santé Maroc actualités santé publique 2026"},
+  {id:"vaccins-monde",label:"Vaccins dans le Monde",icon:"🌐",desc:"Actualités mondiales vaccination",query:"vaccines world news WHO immunization 2026"},
+];
+
+const PRELOADED={
+  "african-cdc":[
+    {title:"Africa CDC — Rapport de veille épidémiologique hebdomadaire, mars 2026",url:"https://africacdc.org/download/africa-cdc-epidemic-intelligence-weekly-report-march-2026/",content:"L'Africa CDC publie chaque semaine son rapport de veille épidémiologique, devenu la référence pour le suivi des menaces sanitaires sur le continent. Le rapport de mars 2026 couvre les événements prioritaires identifiés par le système de surveillance, incluant les flambées de maladies infectieuses et les urgences de santé publique en cours dans les États membres de l'Union Africaine. Ce document fournit des données actualisées sur la situation du Mpox, les cas de choléra, la dengue et d'autres pathologies émergentes. Il s'appuie sur le réseau de surveillance événementielle renforcé par les nouvelles lignes directrices adoptées par l'Eswatini.",date:"2026-03-15"},
+    {title:"AGARI : plateforme génomique panafricaine pour la réponse aux épidémies",url:"https://africacdc.org/tag/outbreak-response/",content:"L'Africa CDC a lancé AGARI (African Genomic Architecture for Response and Innovation), une plateforme de données génomiques couvrant tout le continent africain. Cette infrastructure centralise les données de séquençage pour renforcer la réponse rapide aux épidémies. Lors du Mpox et du COVID-19, le manque de capacités de séquençage avait été un handicap majeur. AGARI permet aux laboratoires africains de partager leurs données en temps réel, facilitant le suivi des mutations virales. La plateforme s'inscrit dans le partenariat Africa CDC-CEPI. Elle complète les investissements dans 9 centres d'excellence (1,6M USD).",date:null},
+    {title:"Programme de Fellowship en manufacture de vaccins — Cohorte 2 (2026)",url:"https://www.facebook.com/africacdc/posts/1344896737668697/",content:"L'Africa CDC et l'AVMI lancent la 2e cohorte du Programme de Fellowship en Manufacture de Vaccins, entièrement financé pour un an. L'Afrique compte moins de 3 000 experts en biomanufacture, l'objectif est 12 500 d'ici 2040. Les fellows bénéficieront d'expérience pratique en cGMP en Égypte, Sénégal et Afrique du Sud. Domaines ciblés : pharmacie, biotechnologie, chimie, génie chimique. Date limite : 30 avril 2026, démarrage juillet 2026. Pilier de la stratégie de souveraineté vaccinale de l'UA.",date:"2026-03-24"},
+  ],
+  "african-medical-agency":[
+    {title:"L'AMA et AUDA-NEPAD achèvent la transition des programmes réglementaires",url:"https://www.marketaccess.africa/blogs/maa-regulatory-spotlight---22-2",content:"Le 23 janvier 2026 à Lusaka, l'AMA et AUDA-NEPAD ont finalisé le transfert des programmes AMRH et AU3S. Cette transition couvre les aspects techniques, financiers, numériques et juridiques. L'AMA coordonne désormais les niveaux continental, régional et national de la réglementation. Le Zimbabwe a lancé le contrôle post-commercialisation aux points d'entrée. Le Botswana a obtenu l'accréditation internationale de ses laboratoires. La Somalie avance sur un projet de loi réglementaire.",date:"2026-01-23"},
+    {title:"Cinq tendances qui façonnent la pharma africaine en 2026",url:"https://pharmaboardroom.com/articles/five-trends-shaping-african-healthcare-and-pharma-in-2026/",content:"2026 est charnière : 1) souveraineté sanitaire comme prérequis de résilience, 2) AMA en phase d'implémentation concrète avec harmonisation réglementaire, 3) réinvention des chaînes d'approvisionnement via hubs régionaux et distribution numérique, 4) sécurité des patients comme critère de confiance central, 5) approbations rapides comme le lénacapavir (VIH) par Zambie, Zimbabwe et Afrique du Sud illustrant l'accélération de l'accès aux médicaments innovants.",date:"2026-01-01"},
+    {title:"Cinq nouveaux produits au listing continental — Green Book 2e édition",url:"https://www.marketaccess.africa/blogs/maa-regulatory-spotlight---17-2",content:"Cinq produits ont obtenu le listing continental : trois thérapeutiques et, pour la première fois, deux kits diagnostiques in vitro pour le Mpox. Tournant dans la régulation des diagnostics régionaux. Le Sénégal et la Côte d'Ivoire forgent un partenariat réglementaire en Afrique de l'Ouest. La Tunisie publie de nouvelles normes d'emballage. Le Zimbabwe lance son système de licences en ligne.",date:"2026-01-22"},
+  ],
+  "manufacture-vaccins":[
+    {title:"Rapport IPPS 2026 : manufacture vaccinale en Afrique",url:"https://anrs.fr/wp-content/uploads/2026/01/ipps-implementation-report-2026-v6-web.pdf",content:"10 fabricants dans 6 pays identifiés. Cinq avec transferts de technologie : Marbio (Maroc), Vacsera (Égypte), Institut Pasteur Dakar (Sénégal), Aspen Pharmacare (Afrique du Sud), Biovac (Égypte). Cinq en attente : Eva Pharma, Minapharm, Biogeneric (Égypte), Saidal (Algérie), Atlantic Biotech (Ghana). 19 fabricants d'anticorps monoclonaux dans 11 pays. Seuls deux régulateurs ML3 supervisent la production : EDA (Égypte) et SAHPRA (Afrique du Sud). Besoin critique de manufacture locale.",date:"2026-01-01"},
+    {title:"Nature : renforcer les capacités vaccinales africaines",url:"https://www.nature.com/articles/s41467-025-62839-y",content:"25 projets vaccinaux actifs en Afrique. Trois fabricants viseront la préqualification OMS pour 9 produits (2026-2030) : Sénégal (fièvre jaune, rougeole-rubéole) et Afrique du Sud (Hexa, PCV, MMCV, Rota, OCV, IPV). La production d'antigènes est fondamentale pour l'autosuffisance. La capacité actuelle est concentrée sur le FFF. Investissements nécessaires : chaîne du froid, matières premières, formation biotechnologique.",date:"2026-02-12"},
+    {title:"Vaccins prioritaires pour la production locale (Vaccine)",url:"https://www.sciencedirect.com/science/article/pii/S0264410X25001264",content:"Top 5 vaccins prioritaires pour la manufacture locale : rougeole-rubéole, fièvre jaune, choléra, rotavirus, méningocoque. Seuls Sénégal et Afrique du Sud ont des capacités end-to-end. Plateformes (virus atténués, inactivés, ARNm) peu développées. Facilitateurs : approvisionnement préférentiel via GAVI/UNICEF, investissements ciblés, transferts de technologie, renforcement réglementaire et R&D.",date:"2025-03-19"},
+  ],
+  "unicef-gavi":[
+    {title:"GAVI/UNICEF : accord historique vaccin antipaludique",url:"https://www.unicef.org/press-releases/gavi-and-unicef-announce-equitable-pricing-deal-malaria-vaccine-protect-7-million",content:"Accord pour le vaccin R21/Matrix-M : 90M USD d'économies, 30M doses supplémentaires, 7M enfants protégés d'ici fin de décennie. Cible Plasmodium falciparum (75% des décès chez <5 ans). Plus de 40M doses livrées dans 24 pays africains couvrant 70% du fardeau mondial. Pays : Bénin, Burkina Faso, Cameroun, RDC, Éthiopie, Ghana, Kenya, Nigeria, Mozambique et plus.",date:"2025-11-24"},
+    {title:"OMS/UNICEF/GAVI : épidémies évitables menacent les progrès",url:"https://www.who.int/news/item/24-04-2025/increases-in-vaccine-preventable-disease-outbreaks-threaten-years-of-progress--warn-who--unicef--gavi",content:"Appel conjoint face aux maladies évitables. Sommet GAVI juin 2025 : objectif 9 milliards USD pour 2026-2030, protéger 500M enfants, sauver 8M vies. Recommandations : combler le déficit de financement, renforcer vaccination en zones de conflit, prioriser stratégies locales, combattre désinformation, investir dans surveillance.",date:"2025-04-24"},
+    {title:"GAVI : feuille de route vaccins antipaludiques",url:"https://amrefcanada.org/gavi-outlines-plans-to-build-a-sustainable-supply-of-malaria-vaccines/",content:"Objectif : 40-60M doses d'ici 2026, 80-100M d'ici 2030. Obstacle principal : approvisionnement. Nécessite coordination sur prévisions de demande, fournisseurs, transferts technologiques, cofinancement. GAVI a vacciné 981M enfants depuis 2000, prévenu 16,2M décès. Intégration avec interventions antipaludiques existantes comme axe stratégique.",date:null},
+  ],
+  "sante-maroc":[
+    {title:"Santé au Maroc : 2026, le grand saut vers la proximité",url:"https://journalsantemaroc.com/news-sante/sante-au-maroc-2026-annee-du-grand-saut-vers-la-proximite.html",content:"67 nouveaux centres de soins inaugurés. Maillage territorial intensifié. Réforme : généralisation AMO, modernisation hôpitaux, protection sociale. Santé maternelle et infantile prioritaire. Défis persistants : pénurie de médecins, déserts médicaux ruraux, équilibrage de l'offre nationale.",date:"2026-01-01"},
+    {title:"Réforme santé Maroc : 2026, l'année du test (TelQuel)",url:"https://mobile.telquel.ma/2026/03/16/tribune-reforme-de-la-sante-au-maroc-2026-lannee-du-test_1978966",content:"Tribune d'Ali Taleb Farhat. Nouvelles institutions : Haute Autorité de Santé, Agence Marocaine du Médicament, Agence du Sang. Le défi : passer de l'ambition aux résultats concrets. La santé est un facteur de justice sociale, développement économique et cohésion nationale.",date:"2026-03-16"},
+    {title:"Afrobarometer 2026 : alertes système de santé marocain",url:"https://santemag.ma/systeme-de-sante-au-maroc-le-rapport-afrobarometer-2026-alerte-sur-delais-penuries-et-acces-aux-soins/",content:"45 600 interviews, 38 pays. Santé = priorité n°1 (38%). Maroc : bon accès géographique urbain. Mais 95% signalent des délais d'attente (79% moyenne africaine), 81% ruptures de médicaments (71% moyenne). 63% ont renoncé à des soins pour coût. 70% veulent accès garanti même avec hausse d'impôts.",date:"2026-04-01"},
+    {title:"Santé numérique Maroc : GITEX Future Health Africa 2026",url:"https://4tech.ma/sante-numerique-au-maroc-gitex-future-health-africa-2026/",content:"Trois axes : télémédecine rurale, suivi maladies chroniques (tension, glycémie), diagnostic IA. Startups développent algorithmes de détection par images médicales. Gestion centralisée dossiers médicaux. Objectif : modèle régional HealthTech au GITEX 2026.",date:"2026-03-01"},
+  ],
+  "vaccins-monde":[
+    {title:"Percées vaccinales 2026 — GAVI (6 experts)",url:"https://www.gavi.org/vaccineswork/what-are-biggest-vaccine-breakthroughs-coming-2026-we-asked-six-experts",content:"Résultats attendus : vaccin Rotasiil (Inde), essai rappel rotavirus au Pakistan. Priorité vaccin pré-F fusion VRS pour femmes enceintes. Nouvelles stratégies vaccins VIH lignée germinale. Convergence vaccins-technologies-écosystèmes. Partenariats DCVMN renforcent chaînes mondiales. Manufacture en expansion en Afrique et Amérique latine.",date:"2026-01-05"},
+    {title:"Semaine mondiale vaccination 2026 — OMS",url:"https://www.who.int/campaigns/world-immunization-week/2026",content:"Vaccins contre paludisme, VPH, choléra, dengue, méningite, VRS, Ebola et Mpox sauvent plus de vies. Importance de maintenir couverture vaccinale malgré désinformation et pressions budgétaires. Appel à engagement universel.",date:"2026-04-01"},
+    {title:"OMS : recommandations vaccins grippe 2026-2027",url:"https://www.who.int/health-topics/vaccines-and-immunization",content:"Recommandations publiées le 27 février 2026 pour l'hémisphère nord. Basées sur le réseau GISRS (100+ pays). Mise à jour annuelle cruciale car virus mutent rapidement. Guide la production de centaines de millions de doses mondiales.",date:"2026-02-27"},
+  ],
+};
+
+let activeCategory="african-cdc";
+let articlesData=JSON.parse(JSON.stringify(PRELOADED));
+let isLoading=false;
+let isCustomSearch=false;
+
+function getSourceColor(d){
+  if(d.includes("who.int"))return"#0093D5";if(d.includes("africacdc")||d.includes("au.int"))return"#1B8C3A";
+  if(d.includes("unicef"))return"#00AEEF";if(d.includes("gavi")||d.includes("amref"))return"#E8702A";
+  if(d.includes(".ma")||d.includes("maroc")||d.includes("telquel")||d.includes("santemag")||d.includes("4tech"))return"#C1272D";
+  if(d.includes("nature.com"))return"#B5232D";if(d.includes("sciencedirect"))return"#F58220";
+  if(d.includes("path.org"))return"#6B2D8B";if(d.includes("cdc.gov"))return"#075290";
+  if(d.includes("pharmaboardroom"))return"#1A6B4F";if(d.includes("anrs.fr"))return"#8B1A4A";
+  if(d.includes("marketaccess"))return"#3578B7";return"#0069B4";
+}
+function extractDomain(u){try{return new URL(u).hostname.replace("www.","")}catch{return""}}
+function timeAgo(d){if(!d)return"";const date=new Date(d),now=new Date(),s=Math.floor((now-date)/1000);if(isNaN(s)||s<0)return"";if(s<86400)return"aujourd'hui";if(s<604800)return`il y a ${Math.floor(s/86400)}j`;if(s<2592000)return`il y a ${Math.floor(s/604800)} sem.`;return date.toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"})}
+
+function renderCategories(){
+  const el=document.getElementById("categories");
+  el.innerHTML=CATEGORIES.map(c=>`<button class="cat-btn ${activeCategory===c.id&&!isCustomSearch?'active':''}" data-id="${c.id}"><div class="cat-icon">${c.icon}</div><div class="cat-label">${c.label}</div><div class="cat-desc">${c.desc}</div></button>`).join("");
+  el.querySelectorAll(".cat-btn").forEach(b=>{b.addEventListener("click",()=>{isCustomSearch=false;activeCategory=b.dataset.id;document.getElementById("errorBox").style.display="none";renderCategories();renderArticles()})});
+}
+
+function renderArticles(){
+  const container=document.getElementById("articles"),articles=articlesData[activeCategory]||[];
+  document.getElementById("toolbarInfo").textContent=`${articles.length} articles`;
+  if(isLoading){container.innerHTML=`<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-text">Recherche Tavily en cours…</div><div class="spinner-sub">~3 secondes</div></div>`;return}
+  if(!articles.length){container.innerHTML=`<div class="spinner-wrap" style="padding:40px 0"><div style="font-size:52px;opacity:.3;margin-bottom:14px">📰</div><div class="spinner-text">Aucun article trouvé</div><div class="spinner-sub">Cliquez Actualiser pour réessayer</div></div>`;return}
+  container.innerHTML=articles.map((a,i)=>{const domain=extractDomain(a.url),color=getSourceColor(domain),dateStr=timeAgo(a.date);return`<div class="article-card" style="animation-delay:${i*.06}s"><div class="article-inner"><div class="article-bar" style="background:${color}"></div><div class="article-body"><a href="${a.url}" target="_blank" rel="noopener" class="article-title">${a.title}</a><div class="article-content collapsed" id="c-${i}">${a.content}</div><div class="article-meta"><span class="source-tag" style="background:${color}14;color:${color}">${domain}</span>${dateStr?`<span class="date-tag">${dateStr}</span>`:''}<button class="expand-btn" data-i="${i}">Lire plus ▼</button></div></div></div></div>`}).join("");
+  container.querySelectorAll(".expand-btn").forEach(b=>{b.addEventListener("click",()=>{const el=document.getElementById("c-"+b.dataset.i),c=el.classList.toggle("collapsed");b.textContent=c?"Lire plus ▼":"Réduire ▲"})});
+}
+
+function setStatus(t){const b=document.getElementById("statusBar"),x=document.getElementById("statusText");if(t){b.classList.add("visible");x.textContent=t}else b.classList.remove("visible")}
+function setError(t){const e=document.getElementById("errorBox");if(t){e.style.display="flex";e.innerHTML=`<span>ℹ️</span> ${t}`}else e.style.display="none"}
+
+async function searchTavily(query,catId){
+  isLoading=true;setError(null);setStatus("Recherche Tavily…");renderArticles();
+  const btn=document.getElementById("refreshBtn");btn.classList.add("loading");btn.disabled=true;
+  try{
+    const r=await fetch("https://api.tavily.com/search",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({api_key:TAVILY_KEY,query:query,search_depth:"advanced",max_results:8})});
+    if(!r.ok)throw new Error("Erreur Tavily: "+r.status);
+    const data=await r.json();
+    setStatus("Traitement…");
+    if(data.results&&data.results.length>0){
+      articlesData[catId]=data.results.map(r=>({title:r.title||"Sans titre",url:r.url||"#",content:(r.content||"").slice(0,600),date:r.published_date||null}));
+      const upd=document.getElementById("lastUpdate"),txt=document.getElementById("lastUpdateText");
+      upd.style.display="inline-flex";txt.textContent="Actualisé: "+new Date().toLocaleString("fr-FR");
+    }else{setError("Aucun résultat Tavily. Les données pré-chargées restent affichées.")}
+  }catch(e){console.error(e);setError("Erreur: "+e.message+". Les données pré-chargées restent affichées.")}
+  finally{isLoading=false;setStatus(null);btn.classList.remove("loading");btn.disabled=false;renderArticles()}
+}
+
+document.getElementById("refreshBtn").addEventListener("click",()=>{
+  if(isCustomSearch){doSearch();return}
+  const cat=CATEGORIES.find(c=>c.id===activeCategory);
+  if(cat)searchTavily(cat.query,cat.id);
+});
+
+function doSearch(){
+  const val=document.getElementById("searchInput").value.trim();if(!val)return;
+  isCustomSearch=true;activeCategory="search-custom";renderCategories();
+  searchTavily(val,"search-custom");
+}
+
+document.getElementById("searchBtn").addEventListener("click",doSearch);
+document.getElementById("searchInput").addEventListener("keydown",e=>{if(e.key==="Enter")doSearch()});
+
+renderCategories();
+renderArticles();
+</script>
+</body>
+</html>
