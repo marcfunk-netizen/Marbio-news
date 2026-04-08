@@ -133,7 +133,42 @@ QUALITÉ :
         # Clean potential markdown fences
         text = re.sub(r"^```json\s*", "", text.strip())
         text = re.sub(r"\s*```$", "", text.strip())
-        return json.loads(text)
+        # Fix common JSON issues from Claude
+        text = re.sub(r',\s*([}\]])', r'\1', text)  # trailing commas
+        text = re.sub(r'[\x00-\x1f]', ' ', text)  # control characters
+        # Fix unescaped quotes inside strings by trying to parse, if fail try fixing
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            # Try to extract just the JSON object
+            match = re.search(r'\{[\s\S]*\}', text)
+            if match:
+                cleaned = match.group(0)
+                cleaned = re.sub(r',\s*([}\]])', r'\1', cleaned)
+                try:
+                    return json.loads(cleaned)
+                except json.JSONDecodeError:
+                    # Last resort: use Claude to fix its own JSON
+                    print("  Attempting JSON repair...")
+                    repair_r = requests.post(
+                        "https://api.anthropic.com/v1/messages",
+                        headers={
+                            "x-api-key": ANTHROPIC_API_KEY,
+                            "anthropic-version": "2023-06-01",
+                            "content-type": "application/json",
+                        },
+                        json={
+                            "model": "claude-sonnet-4-6",
+                            "max_tokens": 8000,
+                            "messages": [{"role": "user", "content": f"Fix this JSON so it parses correctly. Return ONLY valid JSON, nothing else:\n\n{text[:14000]}"}],
+                        },
+                        timeout=120,
+                    )
+                    repair_r.raise_for_status()
+                    fixed = repair_r.json()["content"][0]["text"]
+                    fixed = re.sub(r"^```json\s*", "", fixed.strip())
+                    fixed = re.sub(r"\s*```$", "", fixed.strip())
+                    return json.loads(fixed)
     except Exception as e:
         print(f"Claude API error: {e}")
         return None
