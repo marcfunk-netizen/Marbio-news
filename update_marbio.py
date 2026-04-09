@@ -86,7 +86,7 @@ IMPORTANT: Use simple ASCII characters. Avoid special quotes or accented charact
     return None
 
 def extract_data(html):
-    m = re.search(r'let articlesData=(\{.*?\});', html, re.DOTALL)
+    m = re.search(r'(?:let|var) articlesData=(\{.*?\});', html, re.DOTALL)
     if not m:
         print("ERROR: articlesData not found")
         return None
@@ -107,7 +107,7 @@ def get_titles(data):
     return t
 
 def rebuild_js(data):
-    lines = ["let articlesData={"]
+    lines = ["var articlesData={"]
     for cat in data:
         lines.append('"' + cat + '":[')
         for a in data[cat]:
@@ -160,7 +160,7 @@ def main():
         return
     print("\nUpdating index.html...")
     new_js = rebuild_js(data)
-    html = re.sub(r'let articlesData=\{.*?\};', new_js, html, flags=re.DOTALL)
+    html = re.sub(r'(?:let|var) articlesData=\{.*?\};', new_js, html, flags=re.DOTALL)
     html = update_footer(html)
     with open("index.html","w",encoding="utf-8") as f:
         f.write(html)
