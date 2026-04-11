@@ -16,11 +16,6 @@ jobs:
           python-version: '3.11'
       - name: Install dependencies
         run: pip install requests anthropic
-      - name: Clean misclassified articles
-        run: |
-          if [ -f clean_once.py ]; then
-            python clean_once.py
-          fi
       - name: Run Marbio updater
         env:
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
