@@ -100,7 +100,7 @@ def tavily_search(query):
             "query": query,
             "search_depth": "advanced",
             "max_results": 5,
-            "days": 7,
+            "days": 30,
         }, timeout=30)
         r.raise_for_status()
         return r.json().get("results", [])
@@ -131,7 +131,7 @@ def search_all():
 def call_claude(search_results, existing_articles_by_cat):
     all_recent = []
     for cat, arts in existing_articles_by_cat.items():
-        for a in arts[:15]:
+        for a in arts[:5]:
             all_recent.append({
                 "category": cat,
                 "title": a.get("title", ""),
