@@ -24,6 +24,7 @@ jobs:
         run: |
           git config user.name "Marbio Bot"
           git config user.email "marbio-bot@users.noreply.github.com"
-          git pull --rebase origin main
           git add index.html
-          git diff --cached --quiet || (git commit -m "📰 Marbio News — $(date +'%d %B %Y' | sed 's/January/janvier/;s/February/février/;s/March/mars/;s/April/avril/;s/May/mai/;s/June/juin/;s/July/juillet/;s/August/août/;s/September/septembre/;s/October/octobre/;s/November/novembre/;s/December/décembre/')" && git push)
+          git diff --cached --quiet || git commit -m "📰 Marbio News — $(date +'%d %B %Y')"
+          git pull --rebase origin main
+          git push
