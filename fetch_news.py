@@ -5,12 +5,12 @@ API_KEY = os.environ["TAVILY_API_KEY"]
 URL = "https://api.tavily.com/search"
 
 QUERIES = {
-    "african-cdc":   "Africa CDC 2026",
-    "ama":           "African Medicines Agency AMA 2026",
-    "manufacture":   "vaccine manufacturing Africa 2026",
-    "unicef-gavi":   "UNICEF GAVI vaccine Africa 2026",
-    "sante-maroc":   "sante Maroc vaccins 2026",
-    "vaccins-monde": "WHO vaccine news 2026",
+    "african-cdc":            "Africa CDC 2026",
+    "african-medical-agency": "African Medicines Agency AMA 2026",
+    "manufacture-vaccins":    "vaccine manufacturing Africa 2026",
+    "unicef-gavi":            "UNICEF GAVI vaccine Africa 2026",
+    "sante-maroc":            "sante Maroc vaccins 2026",
+    "vaccins-monde":          "WHO vaccine news 2026",
 }
 
 CUTOFF = datetime.now(timezone.utc) - timedelta(days=60)
@@ -60,5 +60,4 @@ for cat_id, query in QUERIES.items():
 
 with open("data.json", "w", encoding="utf-8") as f:
     json.dump(result, f, ensure_ascii=False, indent=2)
-
 print("data.json written.")
