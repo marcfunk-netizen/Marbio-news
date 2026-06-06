@@ -4,12 +4,12 @@ API_KEY = os.environ["TAVILY_API_KEY"]
 URL = "https://api.tavily.com/search"
 
 QUERIES = {
-    "african-cdc":   "Africa CDC vaccine health news 2025",
-    "ama":           "African Medicines Agency AMA regulatory news",
-    "manufacture":   "vaccine manufacturing Africa biologics production",
-    "unicef-gavi":   "UNICEF GAVI immunization campaign Africa",
-    "sante-maroc":   "sante Maroc vaccins systeme soins 2025",
-    "vaccins-monde": "vaccine global news WHO 2025",
+    "african-cdc":   "Africa CDC 2026",
+    "ama":           "African Medicines Agency AMA 2026",
+    "manufacture":   "vaccine manufacturing Africa 2026",
+    "unicef-gavi":   "UNICEF GAVI vaccine Africa 2026",
+    "sante-maroc":   "sante Maroc vaccins 2026",
+    "vaccins-monde": "WHO vaccine news 2026",
 }
 
 result = {}
@@ -21,6 +21,7 @@ for cat_id, query in QUERIES.items():
         "max_results": 8,
         "include_answer": False,
         "include_raw_content": False,
+        "days": 30,
     }).encode()
     req = urllib.request.Request(URL, data=payload, headers={"Content-Type": "application/json"})
     try:
