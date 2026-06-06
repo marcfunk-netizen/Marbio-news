@@ -1,1 +1,77 @@
+name: Refresh News
+
+on:
+  schedule:
+    - cron: '0 6 * * *'   # 07h00 heure Maroc (UTC+1)
+  workflow_dispatch:       # déclenchement manuel
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch news via Tavily
+        env:
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+        run: |
+          python3 - <<'EOF'
+import json, os, urllib.request, urllib.error
+
+API_KEY = os.environ["TAVILY_API_KEY"]
+URL = "https://api.tavily.com/search"
+
+QUERIES = {
+  "african-cdc":   "Africa CDC vaccine health news 2025",
+  "ama":           "African Medicines Agency AMA regulatory news",
+  "manufacture":   "vaccine manufacturing Africa biologics production",
+  "unicef-gavi":   "UNICEF GAVI immunization campaign Africa",
+  "sante-maroc":   "santé Maroc système soins vaccins 2025",
+  "vaccins-monde": "vaccine global news WHO 2025",
+}
+
+result = {}
+for cat_id, query in QUERIES.items():
+    payload = json.dumps({
+        "api_key": API_KEY,
+        "query": query,
+        "search_depth": "advanced",
+        "max_results": 8,
+        "include_answer": False,
+        "include_raw_content": False,
+    }).encode()
+    req = urllib.request.Request(URL, data=payload, headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            data = json.loads(r.read())
+        articles = []
+        for item in data.get("results", []):
+            articles.append({
+                "title":   item.get("title", ""),
+                "url":     item.get("url", ""),
+                "content": item.get("content", ""),
+                "date":    item.get("published_date", ""),
+            })
+        result[cat_id] = articles
+        print(f"✓ {cat_id}: {len(articles)} articles")
+    except Exception as e:
+        print(f"✗ {cat_id}: {e}")
+        result[cat_id] = []
+
+with open("data.json", "w", encoding="utf-8") as f:
+    json.dump(result, f, ensure_ascii=False, indent=2)
+
+print("data.json written.")
+EOF
+
+      - name: Commit data.json
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data.json
+          git diff --cached --quiet || git commit -m "chore: refresh news $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
 
