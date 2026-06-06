@@ -1,4 +1,5 @@
 import json, os, urllib.request
+from datetime import datetime, timedelta, timezone
 
 API_KEY = os.environ["TAVILY_API_KEY"]
 URL = "https://api.tavily.com/search"
@@ -12,16 +13,28 @@ QUERIES = {
     "vaccins-monde": "WHO vaccine news 2026",
 }
 
+CUTOFF = datetime.now(timezone.utc) - timedelta(days=60)
+
+def parse_date(s):
+    if not s:
+        return None
+    for fmt in ("%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(s[:19], fmt).replace(tzinfo=timezone.utc)
+        except:
+            pass
+    return None
+
 result = {}
 for cat_id, query in QUERIES.items():
     payload = json.dumps({
         "api_key": API_KEY,
         "query": query,
         "search_depth": "advanced",
-        "max_results": 8,
+        "max_results": 10,
         "include_answer": False,
         "include_raw_content": False,
-        "days": 30,
+        "days": 60,
     }).encode()
     req = urllib.request.Request(URL, data=payload, headers={"Content-Type": "application/json"})
     try:
@@ -29,6 +42,10 @@ for cat_id, query in QUERIES.items():
             data = json.loads(r.read())
         articles = []
         for item in data.get("results", []):
+            pub = parse_date(item.get("published_date", ""))
+            if pub and pub < CUTOFF:
+                print(f"  SKIP old: {item.get('published_date')} — {item.get('title','')[:50]}")
+                continue
             articles.append({
                 "title":   item.get("title", ""),
                 "url":     item.get("url", ""),
