@@ -30,4 +30,4 @@ jobs:
           git reset --soft origin/main
           git add index.html
           git diff --cached --quiet || git commit -m "📰 Marbio News — $(date +'%d %B %Y')"
-          git push origin main
+          git push --force origin main
