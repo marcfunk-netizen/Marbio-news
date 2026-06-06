@@ -21,7 +21,7 @@ for cat_id, query in QUERIES.items():
         "max_results": 8,
         "include_answer": False,
         "include_raw_content": False,
-        "days": 14,
+        "days": 30,
     }).encode()
     req = urllib.request.Request(URL, data=payload, headers={"Content-Type": "application/json"})
     try:
