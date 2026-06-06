@@ -1,35 +1,38 @@
 import os, json, re, requests
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 TAVILY_API_KEY = os.environ["TAVILY_API_KEY"]
 ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
 
+TODAY = date.today().isoformat()
+MONTH_YEAR = date.today().strftime("%B %Y")
+
 CATEGORIES = {
     "african-cdc": [
-        "Africa CDC news april 2026",
-        "Africa CDC outbreak surveillance strategy 2026",
+        f"Africa CDC {MONTH_YEAR}",
+        "Africa CDC Ebola outbreak 2026",
     ],
     "african-medical-agency": [
-        "African Medicines Agency AMA regulation 2026",
-        "pharmaceutical harmonization Africa drug approval 2026",
+        f"African Medicines Agency AMA {MONTH_YEAR}",
+        "AMA pharmaceutical regulation Africa 2026",
     ],
     "manufacture-vaccins": [
-        "vaccine manufacturing plant Africa 2026",
-        "Aspen BioVac Senegal Institut Pasteur Dakar vaccine production",
+        f"vaccine manufacturing Africa {MONTH_YEAR}",
+        "Africa vaccine production factory 2026",
     ],
     "unicef-gavi": [
-        "Gavi vaccine funding 2026",
-        "UNICEF immunization campaign Africa 2026",
+        f"Gavi UNICEF vaccine {MONTH_YEAR}",
+        "UNICEF immunization Africa 2026",
     ],
     "sante-maroc": [
-        "Maroc sante publique actualite 2026",
-        "Morocco health reform hospital ministry 2026",
-        "reforme sanitaire Maroc medicaments 2026",
+        f"Maroc sante {MONTH_YEAR}",
+        f"Morocco health {MONTH_YEAR}",
+        "reforme sanitaire Maroc 2026",
     ],
     "vaccins-monde": [
-        "WHO vaccine approval 2026",
-        "new vaccine clinical trial results 2026",
-        "global immunization campaign measles polio 2026",
+        f"WHO vaccine {MONTH_YEAR}",
+        f"vaccine clinical trial {MONTH_YEAR}",
+        "global immunization WHO 2026",
     ],
 }
 
@@ -82,14 +85,12 @@ def is_duplicate(new_article, existing_articles, url_set, title_threshold=0.55, 
     if new_url and new_url in url_set:
         return True, "same URL"
     for existing in existing_articles:
-        ex_title = existing.get("title", "")
-        ex_content = existing.get("content", "")
-        ts = similarity(new_title, ex_title)
+        ts = similarity(new_title, existing.get("title", ""))
         if ts > title_threshold:
-            return True, f"similar title ({ts:.0%}): '{ex_title[:60]}'"
-        cs = similarity(new_content, ex_content)
+            return True, f"similar title ({ts:.0%})"
+        cs = similarity(new_content, existing.get("content", ""))
         if cs > content_threshold:
-            return True, f"similar content ({cs:.0%}): '{ex_title[:60]}'"
+            return True, f"similar content ({cs:.0%})"
     return False, ""
 
 def tavily_search(query):
@@ -99,7 +100,7 @@ def tavily_search(query):
             "query": query,
             "search_depth": "advanced",
             "max_results": 5,
-            "days": 3,
+            "days": 7,
         }, timeout=30)
         r.raise_for_status()
         return r.json().get("results", [])
@@ -122,57 +123,56 @@ def search_all():
             if is_domain_allowed(url, cat):
                 filtered.append(r)
             else:
-                domain = get_domain(url)
-                print(f"    FILTERED: {domain} not allowed in {cat}")
                 removed += 1
         results[cat] = filtered
-        print(f"    Kept {len(filtered)} results ({removed} filtered out)")
+        print(f"    Kept {len(filtered)} ({removed} filtered)")
     return results
 
 def call_claude(search_results, existing_articles_by_cat):
-    today = date.today().isoformat()
     all_recent = []
     for cat, arts in existing_articles_by_cat.items():
-        for a in arts[:10]:
+        for a in arts[:15]:
             all_recent.append({
                 "category": cat,
                 "title": a.get("title", ""),
-                "content_preview": a.get("content", "")[:150],
+                "url": a.get("url", ""),
             })
+
     prompt = f"""You are the editor of Marbio News, a daily health watch bulletin.
 Write 2-3 NEW articles per category from today's search results.
 
 STRICT CATEGORY RULES:
-- "african-cdc": ONLY about Africa CDC as an institution.
+- "african-cdc": ONLY about Africa CDC institution.
 - "african-medical-agency": ONLY about AMA and drug regulation.
 - "manufacture-vaccins": ONLY about vaccine/medicine MANUFACTURING.
-- "unicef-gavi": ONLY about UNICEF and/or Gavi activities.
+- "unicef-gavi": ONLY about UNICEF and/or Gavi.
 - "sante-maroc": ONLY about Morocco's health system.
-- "vaccins-monde": ONLY about vaccine R&D, clinical trials, WHO campaigns, global immunization.
+- "vaccins-monde": ONLY about vaccine R&D, WHO campaigns, global immunization.
 
 ABSOLUTE RULES:
-1. NEVER put Africa CDC institutional news in any category other than "african-cdc".
-2. Each article's URL must come from the search results provided for THAT category.
-3. If a topic appears in EXISTING ARTICLES, do NOT write about it again.
-4. If no genuinely new content exists for a category, return an empty array [].
+1. Each article URL must come from the search results for THAT category.
+2. Do NOT reuse any URL from EXISTING ARTICLES.
+3. If no new content exists for a category, return [].
+4. Write content in the language of the source article.
 
 SEARCH RESULTS:
 {json.dumps(search_results, indent=2, ensure_ascii=False)[:12000]}
 
-EXISTING ARTICLES (do NOT repeat):
-{json.dumps(all_recent, indent=2, ensure_ascii=False)[:8000]}
+EXISTING ARTICLES URLS (do NOT reuse these):
+{json.dumps([a["url"] for a in all_recent], indent=2)[:4000]}
 
-TODAY: {today}
+TODAY: {TODAY}
 
-Reply with ONLY valid JSON. No markdown, no backticks:
+Reply with ONLY valid JSON:
 {{
-  "african-cdc": [{{"title":"...","url":"...","content":"...","date":"{today}"}}],
+  "african-cdc": [{{"title":"...","url":"...","content":"...","date":"{TODAY}"}}],
   "african-medical-agency": [...],
   "manufacture-vaccins": [...],
   "unicef-gavi": [...],
   "sante-maroc": [...],
   "vaccins-monde": [...]
 }}"""
+
     try:
         r = requests.post("https://api.anthropic.com/v1/messages",
             headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
@@ -188,20 +188,10 @@ Reply with ONLY valid JSON. No markdown, no backticks:
         except json.JSONDecodeError:
             m = re.search(r'\{[\s\S]*\}', text)
             if m:
-                cleaned = re.sub(r',\s*([}\]])', r'\1', m.group(0))
-                return json.loads(cleaned)
+                return json.loads(re.sub(r',\s*([}\]])', r'\1', m.group(0)))
     except Exception as e:
         print(f"Claude error: {e}")
     return None
-
-def validate_article_category(article, category):
-    url = article.get("url", "")
-    if not url:
-        return False, "no URL"
-    if not is_domain_allowed(url, category):
-        domain = get_domain(url)
-        return False, f"domain {domain} not allowed in {category}"
-    return True, ""
 
 def extract_data(html):
     m = re.search(r'var articlesData=(\{.*?\});', html, re.DOTALL)
@@ -247,30 +237,28 @@ def rebuild_js(data):
     return "\n".join(lines)
 
 def update_footer(html):
-    months = {1:"janvier",2:"fevrier",3:"mars",4:"avril",5:"mai",6:"juin",7:"juillet",8:"aout",9:"septembre",10:"octobre",11:"novembre",12:"decembre"}
+    months = {1:"janvier",2:"février",3:"mars",4:"avril",5:"mai",6:"juin",
+              7:"juillet",8:"août",9:"septembre",10:"octobre",11:"novembre",12:"décembre"}
     d = f"{datetime.now().day} {months[datetime.now().month]} {datetime.now().year}"
     return re.sub(r'Mis à jour le \d+ \w+ \d{4}', f'Mis à jour le {d}', html)
 
 def main():
     print("="*50)
-    print("Marbio News - Daily Update")
+    print(f"Marbio News - Daily Update - {TODAY}")
     print("="*50)
 
-    print("\nReading index.html...")
     with open("index.html","r",encoding="utf-8") as f:
         html = f.read()
 
-    print("Extracting articles...")
     data = extract_data(html)
     if not data:
-        print("FATAL: Could not parse")
+        print("FATAL: Could not parse index.html")
         return
 
     all_existing = get_all_articles(data)
     url_set = get_url_set(data)
     print(f"Found {len(all_existing)} existing articles")
 
-    print("\nSearching with Tavily...")
     results = search_all()
 
     print("\nGenerating with Claude...")
@@ -281,46 +269,38 @@ def main():
 
     print("\nMerging...")
     total_added = 0
-    total_rejected = 0
-    total_wrong_domain = 0
     for cat, arts in new.items():
         if cat not in data or not isinstance(arts, list):
             continue
         added = 0
         for a in arts:
-            valid, reason = validate_article_category(a, cat)
-            if not valid:
-                print(f"  BLOCK [{cat}] '{a.get('title','')[:50]}' -- {reason}")
-                total_wrong_domain += 1
+            if not is_domain_allowed(a.get("url",""), cat):
+                print(f"  BLOCK [{cat}] wrong domain")
                 continue
             dup, reason = is_duplicate(a, all_existing, url_set)
             if dup:
-                print(f"  SKIP [{cat}] '{a.get('title','')[:50]}' -- {reason}")
-                total_rejected += 1
+                print(f"  SKIP [{cat}] {reason}")
             else:
                 data[cat].insert(0, a)
                 all_existing.append(a)
-                new_url = a.get("url","").rstrip("/").lower()
-                if new_url:
-                    url_set.add(new_url)
+                url_set.add(a.get("url","").rstrip("/").lower())
                 added += 1
                 total_added += 1
-        print(f"  {cat}: +{added} added")
+        print(f"  {cat}: +{added}")
 
-    print(f"\nTotal: +{total_added} added, {total_rejected} duplicates, {total_wrong_domain} blocked")
+    print(f"\nTotal: +{total_added} new articles")
 
     if total_added == 0:
         print("Nothing new today.")
         return
 
-    print("\nUpdating index.html...")
     new_js = rebuild_js(data)
     html = re.sub(r'var articlesData=\{.*?\};', new_js, html, flags=re.DOTALL)
     html = update_footer(html)
 
     with open("index.html","w",encoding="utf-8") as f:
         f.write(html)
-    print(f"\nDone! {total_added} new articles added.")
+    print(f"Done! index.html updated.")
 
 if __name__ == "__main__":
     main()
