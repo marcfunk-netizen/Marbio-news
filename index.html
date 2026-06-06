@@ -21,7 +21,6 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:linear-gradient(168de
 .search-input{width:100%;padding:12px 16px 12px 42px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.08);color:#fff;font-size:13.5px;outline:none;font-family:inherit;transition:all .2s}
 .search-input:focus{background:rgba(255,255,255,0.14);border-color:rgba(255,255,255,0.25)}
 .search-input::placeholder{color:#9AB0C6}
-.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:15px;opacity:.45}
 .search-btn{padding:12px 22px;border-radius:12px;border:none;background:#fff;color:#00538A;font-weight:650;font-size:13px;cursor:pointer;white-space:nowrap;font-family:inherit}
 .main{max-width:820px;margin:0 auto;padding:18px 16px 40px}
 .categories{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px}
@@ -97,7 +96,7 @@ body{font-family:'DM Sans',system-ui,sans-serif;background:linear-gradient(168de
 <footer class="footer" id="siteFooter">
 <strong>Marbio News</strong><br>
 Veille sanitaire automatique · Africa CDC · AMA · UNICEF · GAVI · Maroc · Monde<br>
-Mis à jour le 6 juin 2026
+Mis à jour le <span id="updateDate"></span>
 </footer>
 </main>
 <script>
@@ -233,6 +232,7 @@ function renderArticles(){var container=document.getElementById("articles");var 
 function doSearch(){var val=document.getElementById("searchInput").value.trim().toLowerCase();if(!val){isCustomSearch=false;renderCategories();renderArticles();return;}isCustomSearch=true;var allArticles=[];Object.values(articlesData).forEach(function(arr){if(Array.isArray(arr))arr.forEach(function(a){allArticles.push(a)})});var filtered=allArticles.filter(function(a){return(a.title+a.content).toLowerCase().includes(val)});activeCategory="search-custom";articlesData["search-custom"]=filtered;renderCategories();renderArticles();}
 document.getElementById("searchBtn").addEventListener("click",doSearch);
 document.getElementById("searchInput").addEventListener("keydown",function(e){if(e.key==="Enter")doSearch()});
+document.getElementById("updateDate").textContent=new Date().toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
 renderCategories();
 renderArticles();
 </script>
