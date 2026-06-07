@@ -152,7 +152,7 @@ STRICT CATEGORY RULES:
 ABSOLUTE RULES:
 1. Each article URL must come from the search results for THAT category.
 2. Do NOT reuse any URL from EXISTING ARTICLES.
-3. If no new content exists for a category, return [].
+3. If no relevant search results exist for a category, return 1 article minimum using the closest available result.
 4. Write content in the language of the source article.
 
 SEARCH RESULTS:
@@ -180,6 +180,7 @@ Reply with ONLY valid JSON:
             timeout=120)
         r.raise_for_status()
         text = r.json()["content"][0]["text"]
+        print(f"Claude raw output (first 2000 chars):\n{text[:2000]}")
         text = re.sub(r"^```json\s*", "", text.strip())
         text = re.sub(r"\s*```$", "", text.strip())
         text = re.sub(r',\s*([}\]])', r'\1', text)
