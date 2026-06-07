@@ -104,7 +104,6 @@ def tavily_search(query, existing_urls):
         }, timeout=30)
         r.raise_for_status()
         results = r.json().get("results", [])
-        # Filtrer les URLs deja connues
         fresh = [x for x in results if x.get("url","").rstrip("/").lower() not in existing_urls]
         return fresh
     except Exception as e:
@@ -266,7 +265,6 @@ def main():
     url_set = get_url_set(data)
     print(f"Found {len(all_existing)} existing articles (after trim to 3 per category)")
 
-    # Passer les URLs existantes a Tavily pour pre-filtrage
     results = search_all(url_set)
 
     print("\nGenerating with Claude...")
@@ -282,9 +280,6 @@ def main():
             continue
         added = 0
         for a in arts:
-            if not is_domain_allowed(a.get("url",""), cat):
-                print(f"  BLOCK [{cat}] wrong domain")
-                continue
             dup, reason = is_duplicate(a, all_existing, url_set)
             if dup:
                 print(f"  SKIP [{cat}] {reason}")
