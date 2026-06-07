@@ -93,29 +93,32 @@ def is_duplicate(new_article, existing_articles, url_set, title_threshold=0.70, 
             return True, f"similar content ({cs:.0%})"
     return False, ""
 
-def tavily_search(query):
+def tavily_search(query, existing_urls):
     try:
         r = requests.post("https://api.tavily.com/search", json={
             "api_key": TAVILY_API_KEY,
             "query": query,
             "search_depth": "advanced",
-            "max_results": 5,
-            "days": 30,
+            "max_results": 8,
+            "days": 7,
         }, timeout=30)
         r.raise_for_status()
-        return r.json().get("results", [])
+        results = r.json().get("results", [])
+        # Filtrer les URLs deja connues
+        fresh = [x for x in results if x.get("url","").rstrip("/").lower() not in existing_urls]
+        return fresh
     except Exception as e:
         print(f"  Tavily error: {e}")
         return []
 
-def search_all():
+def search_all(existing_urls):
     results = {}
     for cat, queries in CATEGORIES.items():
         print(f"\n  Searching: {cat}")
         raw = []
         for q in queries:
             print(f"    query: {q}")
-            raw.extend(tavily_search(q))
+            raw.extend(tavily_search(q, existing_urls))
         filtered = []
         removed = 0
         for r in raw:
@@ -125,13 +128,13 @@ def search_all():
             else:
                 removed += 1
         results[cat] = filtered
-        print(f"    Kept {len(filtered)} ({removed} filtered)")
+        print(f"    Kept {len(filtered)} ({removed} domain-filtered)")
     return results
 
 def call_claude(search_results, existing_articles_by_cat):
     all_recent = []
     for cat, arts in existing_articles_by_cat.items():
-        for a in arts[:5]:
+        for a in arts[:3]:
             all_recent.append({
                 "category": cat,
                 "title": a.get("title", ""),
@@ -180,7 +183,6 @@ Reply with ONLY valid JSON:
             timeout=120)
         r.raise_for_status()
         text = r.json()["content"][0]["text"]
-        print(f"Claude raw output (first 2000 chars):\n{text[:2000]}")
         text = re.sub(r"^```json\s*", "", text.strip())
         text = re.sub(r"\s*```$", "", text.strip())
         text = re.sub(r',\s*([}\]])', r'\1', text)
@@ -256,15 +258,16 @@ def main():
         print("FATAL: Could not parse index.html")
         return
 
-    # Trim: garder seulement les 5 plus recents par categorie
+    # Trim: garder seulement les 3 plus recents par categorie
     for cat in data:
-        data[cat] = sorted(data[cat], key=lambda a: a.get("date",""), reverse=True)[:5]
+        data[cat] = sorted(data[cat], key=lambda a: a.get("date",""), reverse=True)[:3]
 
     all_existing = get_all_articles(data)
     url_set = get_url_set(data)
-    print(f"Found {len(all_existing)} existing articles (after trim to 5 per category)")
+    print(f"Found {len(all_existing)} existing articles (after trim to 3 per category)")
 
-    results = search_all()
+    # Passer les URLs existantes a Tavily pour pre-filtrage
+    results = search_all(url_set)
 
     print("\nGenerating with Claude...")
     new = call_claude(results, data)
