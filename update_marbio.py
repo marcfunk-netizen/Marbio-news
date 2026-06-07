@@ -78,7 +78,7 @@ def similarity(a, b):
         return 0.0
     return len(wa & wb) / len(wa | wb)
 
-def is_duplicate(new_article, existing_articles, url_set, title_threshold=0.55, content_threshold=0.40):
+def is_duplicate(new_article, existing_articles, url_set, title_threshold=0.70, content_threshold=0.55):
     new_url = new_article.get("url", "").rstrip("/").lower()
     new_title = new_article.get("title", "")
     new_content = new_article.get("content", "")
@@ -255,9 +255,13 @@ def main():
         print("FATAL: Could not parse index.html")
         return
 
+    # Trim: garder seulement les 5 plus recents par categorie
+    for cat in data:
+        data[cat] = sorted(data[cat], key=lambda a: a.get("date",""), reverse=True)[:5]
+
     all_existing = get_all_articles(data)
     url_set = get_url_set(data)
-    print(f"Found {len(all_existing)} existing articles")
+    print(f"Found {len(all_existing)} existing articles (after trim to 5 per category)")
 
     results = search_all()
 
@@ -304,4 +308,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
