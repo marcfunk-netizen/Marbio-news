@@ -1,4 +1,3 @@
-```python
 import os, json, re, requests
 from datetime import datetime, date, timedelta
 
@@ -305,6 +304,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-```
 
-L'unique différence avec ton fichier actuel : **toutes les queries de la deuxième ligne de chaque catégorie ont maintenant `{MONTH_YEAR}` au lieu de `"2026"` hardcodé.** C'est tout.
